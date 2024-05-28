@@ -21,7 +21,7 @@
 
 1. Identify some basic security and stability issues, and suggest simple ways of correcting them
 
-1. Create a new 'mongodb' branch of the project. With the aim of connecting the application to a MongoDB database, which script(s) should be adapted? Propose a draft code along these lines (not necessarily functional)
+1. Create a new 'mongodb' branch of the project on GitHub: with the aim of connecting the application to a MongoDB database, which script(s) should be adapted? Propose a draft code along these lines (not necessarily functional)
 
 1. Referring to this [tutorial](https://welovedevs.com/fr/articles/postman/), add a Postman project (collections, variable if necessary) for simple testing of the API
 
