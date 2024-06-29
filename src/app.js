@@ -1,14 +1,15 @@
 require('dotenv').config();
+const helmet = require('helmet');
 const express = require('express');
 const cors = require('cors');
+const app = express();
 
 const router = require('./items.router');
-
-const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+app.use(helmet());
 
 app.use('/items', router);
 
@@ -28,9 +29,16 @@ app.use((err, req, res, next) => {
 
 // Handle unexpected errors
 app.use((err, req, res, next) => {
-	res.status(500).json({
-		message: 'something went wrong',
-	});
+	// Filter sensitive error details
+	let filteredError = { message: 'Something went wrong' };
+
+	// Include other necessary information without disclosing sensitive details
+	if (process.env.NODE_ENV === 'development') {
+		filteredError.error = err.message; // Include error message only in development
+		filteredError.stack = err.stack; // Include stack trace only in development
+	}
+
+	res.status(500).json(filteredError);
 });
 
 module.exports = app;

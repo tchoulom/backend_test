@@ -1,38 +1,72 @@
 const service = require('./items.service');
 
 async function findItem(req, res, next, id) {
-	const item = service.findItem(id);
-	if (!item) {
-		return res.status(404).json({
-			message: 'invalid item',
-			errors: { id: 'is unknown' },
-		});
+	try {
+		const item = await service.findItem(id);
+		if (!item) {
+			return res.status(404).json({
+				message: 'Invalid item',
+				errors: { id: 'is unknown' },
+			});
+		}
+		req.item = item;
+		next();
+	} catch (error) {
+		next(error); // Pass error to next middleware
 	}
-	req.item = item;
-	next();
 }
 
 async function createItem(req, res, next) {
-	const newItem = service.createItem();
-	return res.json({ item: newItem });
+	try {
+		const newItem = await service.createItem();
+		return res.json({ item: newItem });
+	} catch (error) {
+		next(error); // Pass error to next middleware
+	}
 }
 
 async function getAllItems(req, res, next) {
-	const items = service.getAllItems();
-	return res.json({ items });
+	try {
+		const items = await service.getAllItems();
+
+		// Filtering by activity status
+		let filteredItems = items;
+		if (req.query.filter_by === 'active') {
+			filteredItems = items.filter(item => item.isActive === true);
+		} else if (req.query.filter_by === 'inactive') {
+			filteredItems = items.filter(item => item.isActive === false);
+		}
+
+		return res.json({ items: filteredItems });
+	} catch (error) {
+		next(error); // Pass error to next middleware
+	}
 }
 
 async function getOneItem(req, res, next) {
-	return res.json({ item: req.item });
+	try {
+		return res.json({ item: req.item });
+	} catch (error) {
+		next(error); // Pass error to next middleware
+	}
 }
 
 async function updateItem(req, res, next) {
-	return res.json({ item: service.updateItem(req.item, req.body.item || {}) });
+	try {
+		const updatedItem = await service.updateItem(req.item, req.body.item || {});
+		return res.json({ item: updatedItem });
+	} catch (error) {
+		next(error); // Pass error to next middleware
+	}
 }
 
 async function deleteItem(req, res, next) {
-	service.deleteItem(req.item);
-	return res.json({ item: req.item });
+	try {
+		await service.deleteItem(req.item);
+		return res.json({ item: req.item });
+	} catch (error) {
+		next(error); // Pass error to next middleware
+	}
 }
 
 module.exports = {
