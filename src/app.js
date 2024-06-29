@@ -5,6 +5,9 @@ const cors = require('cors');
 const app = express();
 
 const router = require('./items.router');
+const { connectToMongoDB } = require('./items.service'); // Call the MongoDB connection function
+
+connectToMongoDB(); // Call the MongoDB connection function
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

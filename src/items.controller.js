@@ -1,6 +1,14 @@
 const service = require('./items.service');
+const mongoose = require('mongoose');
 
 async function findItem(req, res, next, id) {
+	if (!mongoose.Types.ObjectId.isValid(id)) {
+		return res.status(400).json({
+			message: 'Invalid item',
+			errors: { id: 'is not a valid ObjectId' },
+		});
+	}
+
 	try {
 		const item = await service.findItem(id);
 		if (!item) {
@@ -18,7 +26,7 @@ async function findItem(req, res, next, id) {
 
 async function createItem(req, res, next) {
 	try {
-		const newItem = await service.createItem();
+		const newItem = await service.createItem(req.body);
 		return res.json({ item: newItem });
 	} catch (error) {
 		next(error); // Pass error to next middleware
@@ -53,7 +61,8 @@ async function getOneItem(req, res, next) {
 
 async function updateItem(req, res, next) {
 	try {
-		const updatedItem = await service.updateItem(req.item, req.body.item || {});
+		const id = req.params.id; // Get ID from query parameters
+		const updatedItem = await service.updateItem(id, req.body); // Call updateItem with the ID and data to update
 		return res.json({ item: updatedItem });
 	} catch (error) {
 		next(error); // Pass error to next middleware

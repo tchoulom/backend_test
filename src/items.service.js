@@ -1,54 +1,74 @@
-const fs = require('fs').promises; // Using fs.promises for asynchronous operations
-const path = require('path');
-const itemFilename = process.env.ITEMS_FILENAME || 'items.json';
+const mongoose = require('mongoose');
+const Item = require('./models/item');
 
-let items;
-
-async function loadItems() {
+async function connectToMongoDB() {
 	try {
-		const data = await fs.readFile(path.join(__dirname, 'data', itemFilename));
-		items = JSON.parse(data.toString());
-	} catch (err) {
-		console.error('Error loading items:', err);
-		items = [];
-	}
-}
-
-async function saveItems() {
-	try {
-		await fs.writeFile(path.join(__dirname, 'data', itemFilename), JSON.stringify(items, null, 2));
-	} catch (err) {
-		console.error('Error saving items:', err);
+		await mongoose.connect(process.env.DB_HOST || 'mongodb://localhost:27017/backend-test', {
+			useNewUrlParser: true,
+			useUnifiedTopology: true,
+		});
+		console.log('Connected to MongoDB');
+	} catch (error) {
+		console.error('Error connecting to MongoDB:', error);
+		process.exit(1);
 	}
 }
 
 async function createItem(itemData = {}) {
-	const newItem = { ...itemData, id: items.length + 1, lastUpdate: new Date() };
-	items.push(newItem);
-	await saveItems();
-	return newItem;
+	try {
+		const newItem = await Item.create({
+			...itemData,
+			isActive: itemData.isActive !== undefined ? itemData.isActive : true,
+			lastUpdate: new Date()
+		});
+		return newItem;
+	} catch (error) {
+		console.error('Error creating item:', error);
+		throw error;
+	}
 }
 
 async function getAllItems() {
-	await loadItems(); // Asynchronous loading of items
-	return items;
+	try {
+		const items = await Item.find({});
+		return items;
+	} catch (error) {
+		console.error('Error fetching items:', error);
+		throw error;
+	}
 }
 
 async function findItem(id) {
-	await loadItems(); // Asynchronous loading of items
-	return items.find((i) => +i.id === +id);
+	try {
+		const item = await Item.findById(id);
+		return item;
+	} catch (error) {
+		console.error('Error finding item:', error);
+		throw error;
+	}
 }
 
-async function updateItem(item, itemData = {}) {
-	const updatedItem = { ...item, ...itemData, lastUpdate: new Date() };
-	items = items.map((i) => (i.id === item.id ? updatedItem : i));
-	await saveItems();
-	return updatedItem;
+async function updateItem(id, itemData = {}) {
+	try {
+		const updatedItem = await Item.findByIdAndUpdate(id, {
+			isActive: itemData.isActive !== undefined ? itemData.isActive : true,
+			...itemData,
+			lastUpdate: new Date()
+		}, { new: true });
+		return updatedItem;
+	} catch (error) {
+		console.error('Error updating item:', error);
+		throw error;
+	}
 }
 
 async function deleteItem(item) {
-	items = items.filter((i) => i.id !== item.id);
-	await saveItems();
+	try {
+		await Item.findByIdAndDelete(item._id);
+	} catch (error) {
+		console.error('Error deleting item:', error);
+		throw error;
+	}
 }
 
-module.exports = { createItem, getAllItems, findItem, updateItem, deleteItem };
+module.exports = { connectToMongoDB, createItem, getAllItems, findItem, updateItem, deleteItem };

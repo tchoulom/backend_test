@@ -153,3 +153,21 @@ In the package.json file:
 To improve file handling in the `src/items.service.js` service, we use asynchronous file operations (`fs.readFile`, `fs.writeFile`) from the `fs.promises` library to improve file handling. file management without blocking the main thread.
 
 By applying all these fixes mentioned above, we improve the security and stability of our Node.js application.
+
+7. connecting the application to a MongoDB database
+
+- To connect our application to a MongoDB database, we need to modify the `items.service.js` file to use a MongoDB client and replace the current file operations with database operations.
+
+We start by installing Mongoose, an ODM (Object-Document Mapper) library for MongoDB in Node.js:
+
+```
+npm install mongoose
+```
+
+- Creating the `Item.js` model
+- Next, we adapt the code in `items.service.js`.
+- Then, we modify the `app.js` file to use connectToMongoDB.
+- Finally, creation of a Postman project (collections, variable) to test the API.
+  
+The Postman project was exported to the `documentation/postman` folder of the Node js project.
+
